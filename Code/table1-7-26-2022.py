@@ -18,7 +18,7 @@ def numhart(lowdiamkm, updiamkm):
     hartlow=(10.0**-1.14)*lowdiamkm**-1.83
     harthigh=(10.0**-1.14)*updiamkm**-1.83
       
-    hart=(hartlow-harthigh)*surfacearea
+    hart= (hartlow-harthigh) * surface_area
     
     return hart
 
@@ -26,7 +26,7 @@ def numtrask(lowdiamkm, updiamkm):
     trasklow=(10.0**-1.1)*lowdiamkm**-2.0
     traskhigh=(10.0**-1.1)*updiamkm**-2.0
       
-    trask=(trasklow-traskhigh)*surfacearea
+    trask= (trasklow-traskhigh) * surface_area
     
     return trask
     
@@ -68,7 +68,7 @@ def makegruns(minlogmassgrams=-18.0,maxlogmassgrams=2.0):
         massg=10.0**masslog
         
         # converts particle mass to radius 
-        grunsize=0.01*(((1.0/(impdensity/1000.0))*((3.0/4.0)*(1.0/math.pi)*massg))**(1.0/3.0))
+        grunsize=0.01*(((1.0 / (impactor_density / 1000.0)) * ((3.0 / 4.0) * (1.0 / math.pi) * massg)) ** (1.0 / 3.0))
         #print massg, grunsize  Useful to print these out as a cross-check.  This is correct, however (sizes in meters).
          
         # equation A2 from Grun
@@ -97,15 +97,15 @@ def hohocratersize(impradius):
     # Fixes errors in piV, 7/26
         
     
-    impmass=((4.0*math.pi)/3.0)*impdensity*(impradius**3.0)  #impactormass
-    pi2=(gravity*impradius)/(effvelocity**2.0)     
-    pi3=strength/(targdensity*(effvelocity**2.0)) 
+    impmass= ((4.0*math.pi)/3.0) * impactor_density * (impradius ** 3.0)  #impactormass
+    pi2=(gravity*impradius)/(effective_velocity ** 2.0)     
+    pi3=strength/(target_density * (effective_velocity ** 2.0)) 
     expone=(6.0*nu-2.0-mu)/(3.0*mu)
     exptwo=(6.0*nu-2.0)/(3.0*mu)
     expthree=(2.0+mu)/2.0
     expfour=(-3.0*mu)/(2.0+mu)  
-    piV=K1*(pi2*(densityratio**expone)+((K2*pi3*(densityratio**exptwo))**expthree))**expfour
-    V=(impmass*piV)/targdensity   #m3 for crater
+    piV= K1 * (pi2 * (density_ratio ** expone) + ((K2 * pi3 * (density_ratio ** exptwo)) ** expthree)) ** expfour
+    V= (impmass*piV) / target_density   #m3 for crater
     craterrimrad=Kr*(V**(1.0/3.0))
     cratersize=2.0*craterrimrad
     
@@ -136,7 +136,7 @@ def cratcalc(size_km):
         globalfreq=fluxint
     else:
         globalfreq=npfcalc(size/1000.0)   
-    return globalfreq*surfacearea
+    return globalfreq*surface_area
     
     
 
@@ -177,9 +177,9 @@ def cratcalc2(size_km, size_kmupper,lstep):
         else:         
             dflux=np.nan  #this branch only happens if there is a bug.
             
-        globalfreq=surfacearea*dflux
+        globalfreq= surface_area * dflux
     elif size>=10.0:
-        globalfreq=surfacearea*(npfcalc(size_km)-npfcalc(size_kmupper))
+        globalfreq= surface_area * (npfcalc(size_km) - npfcalc(size_kmupper))
     else:  
         globalfreq=np.nan #this branch should never happen, unless there is a bug.
     
