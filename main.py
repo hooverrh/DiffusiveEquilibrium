@@ -30,6 +30,7 @@ def build_lookup_table(size, max_size_km_log10, lstep, initial_depth_diamter, vi
 
         depths_and_ages = []
         current_depth_diamter = initial_depth_diamter
+        print(f"Crater Diameter: {10**size}")
         while depth_greater_than_visibility_threshold():
 
             kT_this_size = diffuse_to_threshold(default_dDmax_strategy, size_km * 1000.0, current_depth_diamter)
@@ -39,11 +40,14 @@ def build_lookup_table(size, max_size_km_log10, lstep, initial_depth_diamter, vi
         
             depths_and_ages.append((current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart))
 
+
+            print(f"\t dD: {current_depth_diamter} \n\t Effective Kappa: {kT_this_size}\n\t Trask: {kT_this_size_trask} \n\t Hart: {kT_this_size_hart}\n")
             current_depth_diamter = decrease_depth()
+
 
         result[size] = depths_and_ages
         
-        print(f"{10**size} ::: {depths_and_ages}\n\n")
+        # print(f"{10**size} ::: {depths_and_ages}\n\n")
         size = size + lstep
 
     return result
