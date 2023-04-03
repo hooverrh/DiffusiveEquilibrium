@@ -6,14 +6,13 @@ import sys
 import pickle
 import os
 from math import log10
+from args import *
 
-
-def build_lookup_table(size, max_size_km_log10, lstep, initial_depth_diamter, visibility_threshold):
+def build_lookup_table(size, max_size_km_log10, lstep, initial_depth_diamter, visibility_threshold, depth_interval):
     def depth_greater_than_visibility_threshold():
         return current_depth_diamter > visibility_threshold
 
     def decrease_depth():
-        depth_interval = 0.01
         return current_depth_diamter - depth_interval
 
     result = {}
@@ -40,14 +39,11 @@ def build_lookup_table(size, max_size_km_log10, lstep, initial_depth_diamter, vi
         
             depths_and_ages.append((current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart))
 
-
             print(f"\t dD: {current_depth_diamter} \n\t Effective Kappa: {kT_this_size}\n\t Trask: {kT_this_size_trask} \n\t Hart: {kT_this_size_hart}\n")
             current_depth_diamter = decrease_depth()
 
-
         result[size] = depths_and_ages
         
-        # print(f"{10**size} ::: {depths_and_ages}\n\n")
         size = size + lstep
 
     return result
@@ -70,44 +66,22 @@ def default_table_path():
     return path
 
 
-def main():
-    # probably best not to have this bigger than 200m because those aren't in equilibrium
+def main(args):
+
+    diffusion_interval = get_diffusion_interval(args)
+    min_size_km_log10 = log10(get_min_size(args))
+    max_size_km_log10 = log10(get_max_size(args))
+    initial_depth = get_initial_depth(args)
+    visibility_threshold = get_visibility_threshold(args)
+    depth_interval = get_depth_interval(args)
     
-    
 
-    lstep = 0.1 # 0.015051499783199 / 2.0
-    min_size_km_log10 = log10(3) #-3 - lstep / 2.0
-    max_size_km_log10 = log10(6) # -0.7
-    size = min_size_km_log10
-
-    initial_depth = 0.21
-    visibility_threshold = 0.04 if not visibilitythreshold else visibilitythreshold
-
-    lookup_table = build_lookup_table(size, max_size_km_log10, lstep, initial_depth, visibility_threshold)
+    lookup_table = build_lookup_table(min_size_km_log10, max_size_km_log10, diffusion_interval, initial_depth,
+                                      visibility_threshold, depth_interval)
 
     save_lookup_table(default_table_path(), lookup_table)
 
-    # plt.yscale('log')
-    # plt.xlim([0.95, 250.0])
-    # plt.ylim([1.0e-3, 1.0])
-    #
-    # plt.xscale('log')
-    # plt.xlabel("Crater Diameter (m)")
-    # plt.ylabel("Effective Kappa $(m^2/My)$")
-    #
-    # plt.scatter(sizes, kTrask, label='Trask/Nominal')
-    # plt.scatter(sizes, kTraskO, label='Trask/FT2014')
-    # plt.scatter(sizes, kTraskP, label='Trask/PowerdD')
-    # plt.scatter(sizes, kTraskQ, label='Trask/Reduced')
-    # plt.legend()
-    # plt.savefig('FigS4.png', dpi=300)
-    # plt.show()
-    #
-    # except(Usage, err):
-    #     print(sys.stderr, err.msg)
-    #     # print >>sys.stderr, "for help use --help"
-    #     return 2
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(parse_args()))

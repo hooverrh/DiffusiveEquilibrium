@@ -16,4 +16,3 @@ density_ratio = (target_density / impactor_density)
 # km^2
 surface_area = 1.0
 
-visibilitythreshold = 0.04
