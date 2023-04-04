@@ -86,7 +86,7 @@ def get_depth_interval(args):
         print(f"--depth-diameter-interval not set, using the default depth interval{default_interval}")
         return default_interval
     print(f"Using user provided depth interval {args.depth_diameter_interval}")
-    return args.default_interval
+    return args.depth_diameter_interval
 
 
 
