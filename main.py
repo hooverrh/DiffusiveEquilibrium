@@ -150,13 +150,13 @@ def do_measure(args):
 
 
 def main(args):
-    match args.command:
-        case "diffuse":
-            do_diffuse(args)
-            sys.exit(0)
-        case "measure":
-            do_measure(args)
-            sys.exit(0)
+    if args.command == "diffuse":
+        do_diffuse(args)
+        sys.exit(0)
+
+    if args.command == "measure":
+        do_measure(args)
+        sys.exit(0)
 
     sys.exit(1)
 
