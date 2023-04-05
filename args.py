@@ -1,6 +1,11 @@
 import argparse
+import string
 import sys
 import os
+from datetime import datetime
+import random
+
+
 
 
 def build_diffusion_parser(subparsers):
@@ -47,11 +52,13 @@ def get_measured_diameter_header(args):
         sys.exit(1)
     return args.measured_diameter_header
 
+
 def get_measured_depth_diameter_header(args):
     if not args.measured_diameter_header:
         print(f"--measured-depth-diameter-header is not set. This is a required field")
         sys.exit(1)
     return args.measured_depth_diameter_header
+
 
 def get_min_diameter(args):
     default = 0.0
@@ -61,6 +68,7 @@ def get_min_diameter(args):
     print(f"Using user provided minimum crater diamter {args.minimum_diameter}km")
     return args.minimum_diameter
 
+
 def get_max_diameter(args):
     default = 999999999.0
     if not args.maximum_diameter:
@@ -69,6 +77,21 @@ def get_max_diameter(args):
     print(f"Using user provided maximum crater diamter {args.maximum_diameter}km")
     return args.maximum_diameter
 
+def get_output_file(args):
+    default = str(datetime.now()) + ".csv"
+    if not args.output_file:
+        print(f"--output-file not set. Using {default}")
+        return default
+    if not str(args.output_file).endswith(".csv"):
+        return args.output_file + ".csv"
+    return args.output_file
+
+def get_output_suffix(args):
+    default = ''.join(random.choice(string.ascii_uppercase) for i in range(3))
+    if not args.output_suffix:
+        print(f"--output-suffix not set. Using {default}")
+        return default
+    return args.output_suffix
 
 
 def build_measure_parser(subparsers):
@@ -76,20 +99,22 @@ def build_measure_parser(subparsers):
 
     parser.add_argument("--lookup-table-path", type=str,
                         help="""
+                        *OPTIONAL*
                         This is the path to the lookup table. It should be a pickle file. Use relative path
                         """)
     parser.add_argument("--csv-path", type=str, required=True,
                         help="""
-                        REQUIRED
+                        *REQUIRED*
                         This is the path to the CSV file
                         """)
     parser.add_argument("--measured-diameter-header", type=str, required=True,
                         help="""
-                        REQUIRED
+                        *REQUIRED*
                         This is the name of the column containing measure diameter
                         """)
     parser.add_argument("--minimum-diameter", type=float, required=False,
                         help="""
+                        *OPTIONAL*
                         This is the smallest diameter crater in the csv that will be processed
                         This should be a float. For example:
                         --minimum-diameter 0.8
@@ -97,6 +122,7 @@ def build_measure_parser(subparsers):
                         """)
     parser.add_argument("--maximum-diameter", type=float, required=False,
                         help="""
+                        *OPTIONAL*
                         This is the largest diameter crater in the csv that will be processed
                         This should be a float. For example:
                         --max-diameter 0.8
@@ -104,12 +130,28 @@ def build_measure_parser(subparsers):
                         """)
     parser.add_argument("--measured-depth-diameter-header", type=str, required=True,
                         help="""
-                        REQUIRED
+                        *REQUIRED*
                         This is the name of the column containing measure depth diameter ratio
+                        """)
+
+    parser.add_argument("--output-file", type=str,
+                        help="""
+                        *OPTIONAL*
+                        Name of the CSV file which will be generated when run.
+                        If no file is provided an automatically generated with be created.
+                        This will overwrite a existing file of the same name.
+                        """)
+
+    parser.add_argument("--output-suffix", type=str,
+                        help="""
+                        *OPTIONAL*
+                        A suffix that will be affixed to the headers for modeled data.
+                        If omitted a random 3 character string will be used instead
                         """)
 
     parser.add_argument("--verbosity",  type=int, default=0,
                         help="""
+                        *OPTIONAL*
                         This will print additional log statements
                         Values:
                             0: Standard logging for normal execution

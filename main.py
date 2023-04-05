@@ -1,12 +1,10 @@
 # import matplotlib.pyplot as plt
 
-from scalingparams import *
 from lib import cratcalc2, numtrask, numhart, diffuse_to_threshold, default_dDmax_strategy, eqtimeton
 from math import log10
 from args import *
 import sys
 import pickle
-import os
 import csv
 
 def print_modeled_data(data):
@@ -119,24 +117,36 @@ def do_measure(args):
     depth_diameter_header = get_measured_depth_diameter_header(args)
     min_diameter = get_min_diameter(args)
     max_diameter = get_max_diameter(args)
+    outfile = get_output_file(args)
+    output_suffix = get_output_suffix(args)
     verbosity = args.verbosity
 
     lookup_table = load_lookup_table(table_path)
 
+    new_rows = []
+
     with open(csv_path, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
+        reader = csv.DictReader(csvfile, delimiter=",")
+        rows = list(reader)
         rejected = 0
         processed = 0
         not_in_range = 0
 
-        for row in reader:
+        for row in rows:
+            row[f"modeled_dD_{output_suffix}"] = ''
+            row[f"modeled_kT_{output_suffix}"] = ''
+            row[f"modeled_trask_{output_suffix}"] = ''
+            row[f"modeled_hart_{output_suffix}"] = ''
+
             try:
                 measured_depth_diameter = float(row[depth_diameter_header])
                 measured_diameter = float(row[diameter_header])
+
             except:
                 if verbosity >= 2:
                     print(f"Unable to handle row {row}\n Skipping...\n")
                 rejected += 1
+                new_rows.append(row)
                 continue
 
             if not in_range(measured_diameter):
@@ -144,9 +154,24 @@ def do_measure(args):
                 continue
 
             best = find_best_fit(measured_depth_diameter, measured_diameter)
+            row[f"modeled_dD_{output_suffix}"] = best[0]
+            row[f"modeled_kT_{output_suffix}"] = best[1]
+            row[f"modeled_trask_{output_suffix}"] = best[2]
+            row[f"modeled_hart_{output_suffix}"] = best[3]
+
+            new_rows.append(row)
             processed += 1
 
+
         print(f"Skipped {rejected} rows. \nProcessed {processed} rows. \n{not_in_range} rows not in range.")
+
+
+    with open(outfile, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, delimiter=',', fieldnames=list(new_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(new_rows)
+
+
 
 
 def main(args):
