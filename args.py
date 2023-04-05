@@ -1,44 +1,152 @@
 import argparse
-def parse_args():
-    parser = argparse.ArgumentParser(
-        prog='Diffusive Equilibrium',
-    )
+import sys
+import os
 
-    parser.add_argument("--min-crater-size", type=float,
-                        help="""
+
+def build_diffusion_parser(subparsers):
+    diffusion_parser = subparsers.add_parser(name="diffuse")
+
+    diffusion_parser.add_argument("--min-crater-size", type=float,
+                                  help="""
                         This is the starting crater diameter in kilometers.
                         This is expected to be a float. For example, if the starting crater size is 800 meters,
                         then you should provide: --min-crater-size 0.8
                         """)
-    parser.add_argument("--max-crater-size", type=float,
-                        help="""
+    diffusion_parser.add_argument("--max-crater-size", type=float,
+                                  help="""
                         This is the end crater diameter in kilometers.
                         This is expected to be a float. For example, if the largest crater diameter is 5 kilometers,
                         then you should provide: --max-crater-size 5.0
                         """)
-    parser.add_argument("--initial-depth", type=float,
-                        help="""
+    diffusion_parser.add_argument("--initial-depth", type=float,
+                                  help="""
                         This is the starting depth diameter, the diffusion will run from the initial depth to the visibility threshold
                         This is expected to be a float. For example: --initial-depth 0.21
                         """)
-    parser.add_argument("--visibility-threshold", type=float,
-                        help="""
+    diffusion_parser.add_argument("--visibility-threshold", type=float,
+                                  help="""
                         This is the end depth diameter, the diffusion will run from the initial depth to the visibility threshold
                         This is expected to be a float. For example: --visibility-threshold 0.04
                         """)
-    parser.add_argument("--diffusion-interval", type=float,
-                        help="""
+    diffusion_parser.add_argument("--diffusion-interval", type=float,
+                                  help="""
                         This is the interval between each iteration of the diffusion.
                         This is expected to be a float. For example: --diffusion-interval 0.015051499783199
                         """)
-    
 
-    parser.add_argument("--depth-diameter-interval", type=float,
-                        help="""
+    diffusion_parser.add_argument("--depth-diameter-interval", type=float,
+                                  help="""
                         This is the size of the interval as the craters depth / diameter shrinks from its initial depth to the visibility threshold
                         This is expected to be a float. For example: --depth-diameter-interval 0.1
                         """)
+
+
+def get_measured_diameter_header(args):
+    if not args.measured_diameter_header:
+        print(f"--measured-diameter-header is not set. This is a required field")
+        sys.exit(1)
+    return args.measured_diameter_header
+
+def get_measured_depth_diameter_header(args):
+    if not args.measured_diameter_header:
+        print(f"--measured-depth-diameter-header is not set. This is a required field")
+        sys.exit(1)
+    return args.measured_depth_diameter_header
+
+def get_min_diameter(args):
+    default = 0.0
+    if not args.minimum_diameter:
+        print(f"--minimum-diameter not set, using the default starting crater diameter {default}km ")
+        return default
+    print(f"Using user provided minimum crater diamter {args.minimum_diameter}km")
+    return args.minimum_diameter
+
+def get_max_diameter(args):
+    default = 999999999.0
+    if not args.maximum_diameter:
+        print(f"--maximum-diameter not set, using the default starting crater diameter {default}km ")
+        return default
+    print(f"Using user provided maximum crater diamter {args.maximum_diameter}km")
+    return args.maximum_diameter
+
+
+
+def build_measure_parser(subparsers):
+    parser = subparsers.add_parser(name="measure")
+
+    parser.add_argument("--lookup-table-path", type=str,
+                        help="""
+                        This is the path to the lookup table. It should be a pickle file. Use relative path
+                        """)
+    parser.add_argument("--csv-path", type=str, required=True,
+                        help="""
+                        REQUIRED
+                        This is the path to the CSV file
+                        """)
+    parser.add_argument("--measured-diameter-header", type=str, required=True,
+                        help="""
+                        REQUIRED
+                        This is the name of the column containing measure diameter
+                        """)
+    parser.add_argument("--minimum-diameter", type=float, required=False,
+                        help="""
+                        This is the smallest diameter crater in the csv that will be processed
+                        This should be a float. For example:
+                        --minimum-diameter 0.8
+                        for a crater whose diameter is 800m
+                        """)
+    parser.add_argument("--maximum-diameter", type=float, required=False,
+                        help="""
+                        This is the largest diameter crater in the csv that will be processed
+                        This should be a float. For example:
+                        --max-diameter 0.8
+                        for a crater whose diameter is 800m
+                        """)
+    parser.add_argument("--measured-depth-diameter-header", type=str, required=True,
+                        help="""
+                        REQUIRED
+                        This is the name of the column containing measure depth diameter ratio
+                        """)
+
+    parser.add_argument("--verbose",  action='store_true',
+                        help="""
+                        This will print additional log statements
+                        """)
+
+
+def get_csv_path(args):
+    if not args.csv_path:
+        print(f"--csv-path not set. This is required")
+        sys.exit(1)
+    print(f"Using csv file {args.csv_path}")
+    return args.csv_path
+
+
+def default_table_path():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    path = f"{dir_path}/../lookup_table.pickle"
+    return path
+
+
+def get_lookup_table_path(args):
+    if not args.lookup_table_path:
+        print(f"--lookup-table-path is not set. Using default lookup table path {default_table_path()}")
+        return default_table_path()
+    print(f"Using user provided lookup table {args.lookup_table_path}")
+    return args.lookup_table_path
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        prog='Diffusive Equilibrium',
+    )
+    subparsers = parser.add_subparsers(dest="command")
+
+    build_diffusion_parser(subparsers)
+    build_measure_parser(subparsers)
+
     return parser.parse_args()
+
 
 def get_min_size(args):
     default_min = 3
@@ -48,6 +156,7 @@ def get_min_size(args):
     print(f"Using user provided minimum crater diamter {args.min_crater_size}km")
     return args.min_crater_size
 
+
 def get_max_size(args):
     default_max = 6.0
     if not args.min_crater_size:
@@ -55,6 +164,7 @@ def get_max_size(args):
         return default_max
     print(f"Using user provided maximum crater diamter {args.max_crater_size}km")
     return args.max_crater_size
+
 
 def get_initial_depth(args):
     default_depth = 0.21
@@ -64,6 +174,7 @@ def get_initial_depth(args):
     print(f"Using user provided initial depth diameter ratio {args.initial_depth}")
     return args.initial_depth
 
+
 def get_visibility_threshold(args):
     default_depth = 0.04
     if not args.visibility_threshold:
@@ -72,13 +183,15 @@ def get_visibility_threshold(args):
     print(f"Using user provided visibility threshold {args.visibility_threshold}")
     return args.visibility_threshold
 
+
 def get_diffusion_interval(args):
     default_interval = 0.015051499783199
     if not args.diffusion_interval:
         print(f"--diffusion-interval not set, using the default diffusion interval {default_interval}")
-        return default_interval / 2 
+        return default_interval / 2
     print(f"Using user provided diffusion interval {args.diffusion_interval}")
     return args.diffusion_interval / 2
+
 
 def get_depth_interval(args):
     default_interval = 0.01
@@ -87,6 +200,3 @@ def get_depth_interval(args):
         return default_interval
     print(f"Using user provided depth interval {args.depth_diameter_interval}")
     return args.depth_diameter_interval
-
-
-
