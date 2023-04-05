@@ -9,11 +9,15 @@ import pickle
 import os
 import csv
 
+def print_modeled_data(data):
+    print(
+            f"\t dD: {data[0]} \n\t Effective Kappa: {data[1]}\n\t Trask: {data[2]} \n\t Hart: {data[3]}\n")
 
 def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_depth_diamter, visibility_threshold,
                        depth_interval):
     def depth_greater_than_visibility_threshold():
         return current_depth_diamter > visibility_threshold
+
 
     def decrease_depth():
         return current_depth_diamter - depth_interval
@@ -39,10 +43,12 @@ def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_dept
             kT_this_size_trask = kT_this_size / (eqtimeton(years_to_trask) / 1.0e6)
             kT_this_size_hart = kT_this_size / (eqtimeton(years_to_hart) / 1.0e6)
 
-            depths_and_ages.append((current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart))
+            data = (current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart)
 
-            print(
-                f"\t dD: {current_depth_diamter} \n\t Effective Kappa: {kT_this_size}\n\t Trask: {kT_this_size_trask} \n\t Hart: {kT_this_size_hart}\n")
+            depths_and_ages.append(data)
+
+            print_modeled_data(data)
+
             current_depth_diamter = decrease_depth()
 
         result[size_km] = depths_and_ages
@@ -81,8 +87,6 @@ def find_nearest(lst, K):
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
 
 
-
-
 def do_measure(args):
     def reshape_modeled_data(tuple_list):
         data = {}
@@ -102,9 +106,10 @@ def do_measure(args):
         nearest_depth_diameter = find_nearest(list(reshaped_data.keys()), measured_depth_diameter)
         best_fit = reshaped_data[nearest_depth_diameter]
 
-        if verbose:
-            print(f"\n{measured_diameter} ::: {nearest_modeled_diameter}")
-            print(f"\t{measured_depth_diameter} :: {best_fit}")
+        if verbosity >= 1:
+            print(f"\n Measured Diameter: {measured_diameter}kn \n Nearest Modeled Diameter: {nearest_modeled_diameter}km")
+            print(f"\t Measured dD {measured_depth_diameter}")
+            print_modeled_data(best_fit)
 
         return best_fit
 
@@ -114,7 +119,7 @@ def do_measure(args):
     depth_diameter_header = get_measured_depth_diameter_header(args)
     min_diameter = get_min_diameter(args)
     max_diameter = get_max_diameter(args)
-    verbose = args.verbose
+    verbosity = args.verbosity
 
     lookup_table = load_lookup_table(table_path)
 
@@ -129,7 +134,7 @@ def do_measure(args):
                 measured_depth_diameter = float(row[depth_diameter_header])
                 measured_diameter = float(row[diameter_header])
             except:
-                if verbose:
+                if verbosity >= 2:
                     print(f"Unable to handle row {row}\n Skipping...\n")
                 rejected += 1
                 continue
@@ -141,7 +146,7 @@ def do_measure(args):
             best = find_best_fit(measured_depth_diameter, measured_diameter)
             processed += 1
 
-        print(f"Skipped {rejected} rows. Processed {processed} rows. {not_in_range} row not in range.")
+        print(f"Skipped {rejected} rows. \nProcessed {processed} rows. \n{not_in_range} rows not in range.")
 
 
 def main(args):

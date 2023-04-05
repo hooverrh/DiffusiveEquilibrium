@@ -108,9 +108,16 @@ def build_measure_parser(subparsers):
                         This is the name of the column containing measure depth diameter ratio
                         """)
 
-    parser.add_argument("--verbose",  action='store_true',
+    parser.add_argument("--verbosity",  type=int, default=0,
                         help="""
                         This will print additional log statements
+                        Values:
+                            0: Standard logging for normal execution
+                            1: Additional Info
+                            2: Debug Info
+                            3: Warning
+
+                        Example: --verbosity 1
                         """)
 
 
