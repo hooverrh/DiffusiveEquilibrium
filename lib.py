@@ -1,5 +1,6 @@
 import numpy as np
 from pynverse import inversefunc  # pip install pynverse  in relevant conda environment
+from scipy.optimize import fsolve
 from math import log10, pi, exp
 from scalingparams import *
 
@@ -258,7 +259,11 @@ def neqtime(time):
 
 eqtimeton = inversefunc(neqtime)
 
-def craterage(time):
-    return (435.83 * time**5) - (3621.2 * time**4) + (11204 * time**3) - (16811 * time**2) + (17546 * time)
-    
+#def craterage(time):
+ #   return (435.83 * time**5) - (3621.2 * time**4) + (11204 * time**3) - (16811 * time**2) + (17546 * time)
+
+def solve_for_t(kT_this_size):
+    equation = lambda t: (435.83 * (t**5)) - (3621.2 * (t**4)) + (11204 * (t**3)) - (16811 * (t**2)) + (17546 * t) - kT_this_size
+    t_solution = fsolve(equation, x0=0)
+    return t_solution[0]
      

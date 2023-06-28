@@ -1,6 +1,6 @@
 # import matplotlib.pyplot as plt
 
-from lib import cratcalc2, numtrask, numhart, diffuse_to_threshold, default_dDmax_strategy, eqtimeton, craterage
+from lib import cratcalc2, numtrask, numhart, diffuse_to_threshold, default_dDmax_strategy, eqtimeton, solve_for_t
 from math import log10
 from args import *
 import sys
@@ -39,11 +39,13 @@ def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_dept
         print(f"Crater Diameter: {size_km}")
         while depth_greater_than_visibility_threshold():
             kT_this_size = diffuse_to_threshold(default_dDmax_strategy, size_km * 1000.0, current_depth_diamter)
+            #kT_this_size = diffuse_to_threshold(default_dDmax_strategy, size_km, current_depth_diamter)
 
             kT_this_size_trask = kT_this_size / (eqtimeton(years_to_trask) / 1.0e6)
             kT_this_size_hart = kT_this_size / (eqtimeton(years_to_hart) / 1.0e6)
 
-            data = (current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart, craterage(kT_this_size))
+            data = (current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart, solve_for_t(kT_this_size))
+           
 
             depths_and_ages.append(data)
 
