@@ -257,3 +257,8 @@ def neqtime(time):
 
 
 eqtimeton = inversefunc(neqtime)
+
+def craterage(time):
+    return (435.83 * time**5) - (3621.2 * time**4) + (11204 * time**3) - (16811 * time**2) + (17546 * time)
+    
+     

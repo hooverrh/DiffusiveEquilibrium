@@ -1,15 +1,16 @@
 # import matplotlib.pyplot as plt
 
-from lib import cratcalc2, numtrask, numhart, diffuse_to_threshold, default_dDmax_strategy, eqtimeton
+from lib import cratcalc2, numtrask, numhart, diffuse_to_threshold, default_dDmax_strategy, eqtimeton, craterage
 from math import log10
 from args import *
 import sys
 import pickle
 import csv
 
+
 def print_modeled_data(data):
     print(
-            f"\t dD: {data[0]} \n\t Effective Kappa: {data[1]}\n\t Trask: {data[2]} \n\t Hart: {data[3]}\n")
+            f"\t dD: {data[0]} \n\t Effective Kappa: {data[1]}\n\t Trask: {data[2]} \n\t Hart: {data[3]}\n \n\t CraterAge: {data[4]}\n")
 
 def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_depth_diamter, visibility_threshold,
                        depth_interval):
@@ -22,6 +23,7 @@ def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_dept
 
     result = {}
 
+    
     while size < max_size_km_log10:
         size_km = 10.0 ** size
         size_upper_km = 10.0 ** (size + diffusion_interval)
@@ -41,7 +43,7 @@ def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_dept
             kT_this_size_trask = kT_this_size / (eqtimeton(years_to_trask) / 1.0e6)
             kT_this_size_hart = kT_this_size / (eqtimeton(years_to_hart) / 1.0e6)
 
-            data = (current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart)
+            data = (current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart, craterage(kT_this_size))
 
             depths_and_ages.append(data)
 
@@ -137,6 +139,7 @@ def do_measure(args):
             row[f"modeled_kT_{output_suffix}"] = ''
             row[f"modeled_trask_{output_suffix}"] = ''
             row[f"modeled_hart_{output_suffix}"] = ''
+            row[f"modeled_craterage_{output_suffix}"] = ''
 
             try:
                 measured_depth_diameter = float(row[depth_diameter_header])
@@ -158,6 +161,7 @@ def do_measure(args):
             row[f"modeled_kT_{output_suffix}"] = best[1]
             row[f"modeled_trask_{output_suffix}"] = best[2]
             row[f"modeled_hart_{output_suffix}"] = best[3]
+            row[f"modeled_craterage_{output_suffix}"] = best[4]
 
             new_rows.append(row)
             processed += 1
