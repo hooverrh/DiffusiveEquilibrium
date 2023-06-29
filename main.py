@@ -123,6 +123,8 @@ def do_measure(args):
     max_diameter = get_max_diameter(args)
     outfile = get_output_file(args)
     output_suffix = get_output_suffix(args)
+    include_trask = get_include_trask(args)
+    include_hart = get_include_hart(args)
     verbosity = args.verbosity
 
     lookup_table = load_lookup_table(table_path)
@@ -139,8 +141,10 @@ def do_measure(args):
         for row in rows:
             row[f"modeled_dD_{output_suffix}"] = ''
             row[f"modeled_kT_{output_suffix}"] = ''
-            row[f"modeled_trask_{output_suffix}"] = ''
-            row[f"modeled_hart_{output_suffix}"] = ''
+            if include_trask:
+                row[f"modeled_trask_{output_suffix}"] = ''
+            if include_hart:
+                row[f"modeled_hart_{output_suffix}"] = ''
             row[f"modeled_craterage_{output_suffix}"] = ''
 
             try:
@@ -161,8 +165,10 @@ def do_measure(args):
             best = find_best_fit(measured_depth_diameter, measured_diameter)
             row[f"modeled_dD_{output_suffix}"] = best[0]
             row[f"modeled_kT_{output_suffix}"] = best[1]
-            row[f"modeled_trask_{output_suffix}"] = best[2]
-            row[f"modeled_hart_{output_suffix}"] = best[3]
+            if include_trask:
+                row[f"modeled_trask_{output_suffix}"] = best[2]
+            if include_hart:
+                row[f"modeled_hart_{output_suffix}"] = best[3]
             row[f"modeled_craterage_{output_suffix}"] = best[4]
 
             new_rows.append(row)

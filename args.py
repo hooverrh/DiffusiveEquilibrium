@@ -6,8 +6,6 @@ from datetime import datetime
 import random
 
 
-
-
 def build_diffusion_parser(subparsers):
     diffusion_parser = subparsers.add_parser(name="diffuse")
 
@@ -77,6 +75,7 @@ def get_max_diameter(args):
     print(f"Using user provided maximum crater diamter {args.maximum_diameter}km")
     return args.maximum_diameter
 
+
 def get_output_file(args):
     default = str(datetime.now()) + ".csv"
     if not args.output_file:
@@ -86,12 +85,29 @@ def get_output_file(args):
         return args.output_file + ".csv"
     return args.output_file
 
+
 def get_output_suffix(args):
     default = ''.join(random.choice(string.ascii_uppercase) for i in range(3))
     if not args.output_suffix:
         print(f"--output-suffix not set. Using {default}")
         return default
     return args.output_suffix
+
+
+def get_include_trask(args):
+    default = False
+    if args.include_trask:
+        print(f"--include-trask is set")
+        default = True
+    return default
+
+
+def get_include_hart(args):
+    default = False
+    if args.include_hart:
+        print(f"--include-hart is set")
+        default = True
+    return default
 
 
 def build_measure_parser(subparsers):
@@ -149,7 +165,7 @@ def build_measure_parser(subparsers):
                         If omitted a random 3 character string will be used instead
                         """)
 
-    parser.add_argument("--verbosity",  type=int, default=0,
+    parser.add_argument("--verbosity", type=int, default=0,
                         help="""
                         *OPTIONAL*
                         This will print additional log statements
@@ -160,6 +176,20 @@ def build_measure_parser(subparsers):
                             3: Warning
 
                         Example: --verbosity 1
+                        """)
+    parser.add_argument("--include-trask", action='store_true',
+                        help="""
+                        *OPTIONAL*
+                        This will include the Trask values into the resultant csv file
+
+                        Example: --include-trask
+                        """)
+    parser.add_argument("--include-hart", action='store_true',
+                        help="""
+                        *OPTIONAL*
+                        This will include the Hart values into the resultant csv file
+
+                        Example: --include-hart
                         """)
 
 
