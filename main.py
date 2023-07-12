@@ -152,7 +152,7 @@ def do_measure(args):
                 measured_depth_diameter = float(row[depth_diameter_header])
                 measured_diameter = float(row[diameter_header])
 
-                if measured_depth_diameter > visibility_threshold:
+                if measured_depth_diameter <= visibility_threshold:
                     rejected += 1
                     continue
 
