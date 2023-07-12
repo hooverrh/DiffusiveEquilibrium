@@ -125,6 +125,7 @@ def do_measure(args):
     output_suffix = get_output_suffix(args)
     include_trask = get_include_trask(args)
     include_hart = get_include_hart(args)
+    visibility_threshold = get_visibility_threshold(args)
     verbosity = args.verbosity
 
     lookup_table = load_lookup_table(table_path)
@@ -150,6 +151,15 @@ def do_measure(args):
             try:
                 measured_depth_diameter = float(row[depth_diameter_header])
                 measured_diameter = float(row[diameter_header])
+
+                if measured_depth_diameter > visibility_threshold:
+                    rejected += 1
+                    continue
+
+                if measured_depth_diameter > 0.21:
+                    rejected += 1
+                    continue
+
 
             except:
                 if verbosity >= 2:

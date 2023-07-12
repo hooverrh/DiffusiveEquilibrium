@@ -42,6 +42,7 @@ def build_diffusion_parser(subparsers):
                         This is the size of the interval as the craters depth / diameter shrinks from its initial depth to the visibility threshold
                         This is expected to be a float. For example: --depth-diameter-interval 0.1
                         """)
+    
 
 
 def get_measured_diameter_header(args):
@@ -190,6 +191,11 @@ def build_measure_parser(subparsers):
                         This will include the Hart values into the resultant csv file
 
                         Example: --include-hart
+                        """)
+    parser.add_argument("--visibility-threshold", type=float,
+                                  help="""
+                        This is the end depth diameter, the diffusion will run from the initial depth to the visibility threshold
+                        This is expected to be a float. For example: --visibility-threshold 0.04
                         """)
 
 
