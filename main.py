@@ -37,21 +37,33 @@ def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_dept
         depths_and_ages = []
         current_depth_diamter = initial_depth_diamter
         print(f"Crater Diameter: {size_km}")
-        while depth_greater_than_visibility_threshold():
-            kT_this_size = diffuse_to_threshold(default_dDmax_strategy, size_km * 1000.0, current_depth_diamter)
-            #kT_this_size = diffuse_to_threshold(default_dDmax_strategy, size_km, current_depth_diamter)
+while depth_greater_than_visibility_threshold():
+    # 1) Raw diffusion kappaT
+    kT_raw = diffuse_to_threshold(default_dDmax_strategy, size_km * 1000.0, current_depth_diamter)
+    # kT_raw = diffuse_to_threshold(default_dDmax_strategy, size_km, current_depth_diamter)
 
-            kT_this_size_trask = kT_this_size / (eqtimeton(years_to_trask) / 1.0e6)
-            kT_this_size_hart = kT_this_size / (eqtimeton(years_to_hart) / 1.0e6)
+    # 2) Apply your correction
+    #    kappaTCorr = kappaT * (size_km)^(-1.0)
+    kT_corr = kT_raw * (size_km ** -1.0)
 
-            data = (current_depth_diamter, kT_this_size, kT_this_size_trask, kT_this_size_hart, solve_for_t(kT_this_size))
-           
+    # 3) Recompute Trask/Hart values using corrected kappaT
+    kT_this_size_trask = kT_corr / (eqtimeton(years_to_trask) / 1.0e6)
+    kT_this_size_hart = kT_corr / (eqtimeton(years_to_hart) / 1.0e6)
 
-            depths_and_ages.append(data)
+    # 4) Store corrected values in lookup table
+    data = (
+        current_depth_diamter,      # data[0]  = d/D
+        kT_corr,                    # data[1]  = **corrected** kappaT
+        kT_this_size_trask,         # data[2]
+        kT_this_size_hart,          # data[3]
+        solve_for_t(kT_corr)        # data[4]  = age from corrected kappaT
+    )
 
-            print_modeled_data(data)
+    depths_and_ages.append(data)
 
-            current_depth_diamter = decrease_depth()
+    print_modeled_data(data)
+
+    current_depth_diamter = decrease_depth()
 
         result[size_km] = depths_and_ages
 
@@ -214,3 +226,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("User quitting...")
         sys.exit(1)
+
