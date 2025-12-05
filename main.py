@@ -14,16 +14,15 @@ def print_modeled_data(data):
 
 def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_depth_diamter, visibility_threshold,
                        depth_interval):
+
     def depth_greater_than_visibility_threshold():
         return current_depth_diamter > visibility_threshold
-
 
     def decrease_depth():
         return current_depth_diamter - depth_interval
 
     result = {}
 
-    
     while size < max_size_km_log10:
         size_km = 10.0 ** size
         size_upper_km = 10.0 ** (size + diffusion_interval)
@@ -36,35 +35,40 @@ def build_lookup_table(size, max_size_km_log10, diffusion_interval, initial_dept
 
         depths_and_ages = []
         current_depth_diamter = initial_depth_diamter
+
         print(f"Crater Diameter: {size_km}")
-while depth_greater_than_visibility_threshold():
-    # 1) Raw diffusion kappaT
-    kT_raw = diffuse_to_threshold(default_dDmax_strategy, size_km * 1000.0, current_depth_diamter)
-    # kT_raw = diffuse_to_threshold(default_dDmax_strategy, size_km, current_depth_diamter)
 
-    # 2) Apply your correction
-    #    kappaTCorr = kappaT * (size_km)^(-1.0)
-    kT_corr = kT_raw * (size_km ** -1.0)
+        while depth_greater_than_visibility_threshold():
 
-    # 3) Recompute Trask/Hart values using corrected kappaT
-    kT_this_size_trask = kT_corr / (eqtimeton(years_to_trask) / 1.0e6)
-    kT_this_size_hart = kT_corr / (eqtimeton(years_to_hart) / 1.0e6)
+            # 1) raw diffusion kappaT
+            kT_raw = diffuse_to_threshold(
+                default_dDmax_strategy, 
+                size_km * 1000.0, 
+                current_depth_diamter
+            )
 
-    # 4) Store corrected values in lookup table
-    data = (
-        current_depth_diamter,      # data[0]  = d/D
-        kT_corr,                    # data[1]  = **corrected** kappaT
-        kT_this_size_trask,         # data[2]
-        kT_this_size_hart,          # data[3]
-        solve_for_t(kT_corr)        # data[4]  = age from corrected kappaT
-    )
+            # 2) apply correction
+            kT_corr = kT_raw * (size_km ** -1.0)
 
-    depths_and_ages.append(data)
+            # 3) recompute normalized values using corrected kT
+            kT_this_size_trask = kT_corr / (eqtimeton(years_to_trask) / 1.0e6)
+            kT_this_size_hart = kT_corr / (eqtimeton(years_to_hart) / 1.0e6)
 
-    print_modeled_data(data)
+            # 4) store corrected values
+            data = (
+                current_depth_diamter,
+                kT_corr,
+                kT_this_size_trask,
+                kT_this_size_hart,
+                solve_for_t(kT_corr)
+            )
 
-    current_depth_diamter = decrease_depth()
+            depths_and_ages.append(data)
+            print_modeled_data(data)
 
+            current_depth_diamter = decrease_depth()
+
+        # IMPORTANT: this line must align with the `while size < ...` loop
         result[size_km] = depths_and_ages
 
         size = size + diffusion_interval
@@ -226,4 +230,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("User quitting...")
         sys.exit(1)
+
 
